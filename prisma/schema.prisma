@@ -11,4 +11,42 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Location {
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String?
+  parentId    Int?
+  parent      Location?  @relation("LocationHierarchy", fields: [parentId], references: [id])
+  children    Location[] @relation("LocationHierarchy")
+  items       Item[]
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  items Item[]
+}
+
+model Item {
+  id            Int       @id @default(autoincrement())
+  name          String
+  description   String?
+  serialNumber  String?
+  purchaseDate  DateTime?
+  purchasePrice Decimal?  @db.Decimal(10, 2)
+  currentValue  Decimal?  @db.Decimal(10, 2)
+  quantity      Int       @default(1)
+  imageUrl      String?
+  
+  // Relations
+  locationId    Int?
+  location      Location? @relation(fields: [locationId], references: [id])
+  categoryId    Int?
+  category      Category? @relation(fields: [categoryId], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
